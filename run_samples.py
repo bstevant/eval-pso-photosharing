@@ -36,13 +36,11 @@ def compare(file):
     mean_m = numpy.mean(mm)
     print "PSO found placements with mean margin: " + str(int(mean_m)) + "%"
 
-print "========= Infra 10n 50pc"
-compare("samples/infra_sample_10n_50pc")
-print "========= Infra 20n 50pc"
-compare("samples/infra_sample_20n_50pc")
-print "========= Infra 30n 50pc"
-compare("samples/infra_sample_30n_50pc")
-print "========= Infra 40n 50pc"
-compare("samples/infra_sample_40n_50pc")
-print "========= Infra 50n 50pc"
-compare("samples/infra_sample_50n_50pc")
+def run_compare(nodes,pc):
+    for n in nodes:
+        for p in pc:
+            filename = "samples/infra_sample_" + str(n) + "n_" + str(p) + "pc"
+            print("===== " + filename)
+            compare(filename)
+
+run_compare([64], range(0,101,5))
