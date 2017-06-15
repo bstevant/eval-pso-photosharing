@@ -6,22 +6,17 @@ import random
 # call3: put photo to PH
 # call4: get thumb from TH
 
-# file to store matrix
-json_file = "infra_sample.json"
-
-
-
 call1_medrtt = { "dsl_dsl":200, "dsl_fib":100,
                  "fib_dsl":200, "fib_fib":70}
 
 call2_medrtt = { "dsl_dsl":800, "dsl_fib":200,
-                 "fib_dsl":800, "fib_fib":150}
+                 "fib_dsl":800, "fib_fib":100}
 
 call3_medrtt = { "dsl_dsl":800, "dsl_fib":800,
-                 "fib_dsl":200, "fib_fib":150}
+                 "fib_dsl":200, "fib_fib":100}
 
-call4_medrtt = { "dsl_dsl":300, "dsl_fib":200,
-                 "fib_dsl":300, "fib_fib":200}
+call4_medrtt = { "dsl_dsl":300, "dsl_fib":150,
+                 "fib_dsl":300, "fib_fib":150}
 
 
 class Node:
@@ -42,8 +37,8 @@ class Node:
 
 class Link:
     def __init__(self, med_rtt):
-        #self.rtt = self.select_dest_uni(med_rtt)
-        self.rtt = self.select_dest_gaussian(med_rtt)
+        self.rtt = self.select_dest_uni(med_rtt)
+        #self.rtt = self.select_dest_gaussian(med_rtt)
     
     # Select an rtt value from a Gaussian distribution around median
     def select_dest_gaussian(self, median):
@@ -63,9 +58,9 @@ class Link:
     def select_dest_uni(self, median):
         i = random.randint(1,4)
         if i == 1:
-            return random.randint(1,int(median*0.5))
+            return random.randint(int(median*0.3),int(median*0.7))
         if i == 2:
-            return random.randint(int(median*0.5), int(median))
+            return random.randint(int(median*0.7), int(median))
         if i == 3:
             return random.randint(int(median), int(median*1.5))
         if i == 4:
@@ -75,14 +70,14 @@ class Link:
         return self.rtt
 
 class Infra:
-    nodes = []
-    clients = []
-    call1_matrix = []
-    call2_matrix = []
-    call3_matrix = []
-    call4_matrix = []
 
     def __init__(self, n_dsl, n_fiber):
+        self.nodes = []
+        self.clients = []
+        self.call1_matrix = []
+        self.call2_matrix = []
+        self.call3_matrix = []
+        self.call4_matrix = []
         for i in range(0, n_dsl):
             self.nodes.append(Node("dsl"))
         for i in range(0, n_fiber):
@@ -104,7 +99,7 @@ class Infra:
                 l = Link(medrtt[link_type])
                 # Define low rtt for self-calling
                 if (i == j):
-                    l.rtt = 1
+                    l.rtt = l.rtt / 10
                 line.append(l)
             matrix.append(line)
 
@@ -124,9 +119,29 @@ class Infra:
         serial["call3_matrix"] = self.serial_matrix(self.call3_matrix)
         serial["call4_matrix"] = self.serial_matrix(self.call4_matrix)
         return serial
+        
+    @classmethod
+    def read_infra(self, file):
+        with open(file) as json_data:
+            data = json.load(json_data)
+            nodes = data["nodes"]
+            call1_matrix = data["call1_matrix"]
+            call2_matrix = data["call2_matrix"]
+            call3_matrix = data["call3_matrix"]
+            call4_matrix = data["call4_matrix"]
+            clients = data["clients"]
+            return nodes, \
+                    call1_matrix, \
+                    call2_matrix, \
+                    call3_matrix, \
+                    call4_matrix, \
+                    clients
 
 
-infra = Infra(16,16)
-s = open(json_file, 'w', 0)
-s.write(json.dumps(infra.serialize()))
-s.close()
+if __name__ == '__main__':
+    infra = Infra(4,12)
+    # file to store matrix
+    json_file = "infra_sample.json"
+    s = open(json_file, 'w', 0)
+    s.write(json.dumps(infra.serialize()))
+    s.close()
