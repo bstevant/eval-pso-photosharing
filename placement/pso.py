@@ -29,5 +29,5 @@ class PsoPlacement:
         lb = [0, 0, 0, 0]
         ub = [len(self.nodes) -1, len(self.nodes) -1, len(self.nodes) -1, len(self.nodes) -1]
         
-        popt, score = pso(self.scoring.score_placement, lb, ub, f_ieqcons=self.constraint, maxiter=100)
+        popt, score = pso(self.scoring.score_placement, lb, ub, f_ieqcons=self.constraint, maxiter=1000)
         return map(int, popt), score

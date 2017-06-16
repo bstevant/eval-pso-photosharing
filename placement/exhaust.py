@@ -22,7 +22,7 @@ class ExhaustPlacement:
         else: # Some identical locations ... forbidden
             return -1
 
-    def find_placement(self):
+    def find_placement(self, verbose=False):
         score = 100000
         ss= []
         s = 0
@@ -38,15 +38,18 @@ class ExhaustPlacement:
                             if (s < score):
                                 popt = [i,j,k,l]
                                 score = s
+        if verbose:
+            mean_ss = numpy.mean(ss)
+            p25_ss = numpy.percentile(ss,25)
+            p75_ss = numpy.percentile(ss,75)
+            p5_ss = numpy.percentile(ss,5)
+            p95_ss = numpy.percentile(ss,95)
+            print("Score distribution [p5,p25,m,p75,p95]: " + str([p5_ss, p25_ss, mean_ss, p75_ss, p95_ss]))
+            
         return popt, score
 
 #print("Found placement: " + str(popt)+ " with score: " + str(score))
-#mean_ss = numpy.mean(ss)
-#p25_ss = numpy.percentile(ss,25)
-#p75_ss = numpy.percentile(ss,75)
-#p5_ss = numpy.percentile(ss,5)
-#p95_ss = numpy.percentile(ss,95)
-#print("Score distribution [p5,p25,m,p75,p95]: " + str([p5_ss, p25_ss, mean_ss, p75_ss, p95_ss]))
+
 
 #h, b = numpy.histogram(ss, 100)
 #h2 = numpy.cumsum(h)

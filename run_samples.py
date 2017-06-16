@@ -20,9 +20,9 @@ class RedirectStdStreams(object):
         sys.stderr = self.old_stderr
 
 
-def compare(file):
+def compare(file, verbose=False):
     ex = ExhaustPlacement(file)
-    popt, score_ex = ex.find_placement()
+    popt, score_ex = ex.find_placement(verbose=verbose)
     print("Found placement (exh): " + str(popt)+ " with score: " + str(score_ex))
     pso = PsoPlacement(file)
     mm = []
@@ -32,9 +32,15 @@ def compare(file):
             popt, score = pso.find_placement()
             margin = 100*(score-score_ex) / score_ex
             mm.append(margin)
-        #print("Found placement (pso): " + str(popt)+ " with score: " + str(score)) + "margin: " + str(int(margin)) + "%"
     mean_m = numpy.mean(mm)
     print "PSO found placements with mean margin: " + str(int(mean_m)) + "%"
+    if verbose:
+        mean_m = numpy.mean(mm)
+        p25_m = numpy.percentile(mm,25)
+        p75_m = numpy.percentile(mm,75)
+        p5_m = numpy.percentile(mm,5)
+        p95_m = numpy.percentile(mm,95)
+        print("Margin distribution [p5,p25,m,p75,p95]: " + str([p5_m, p25_m, mean_m, p75_m, p95_m]))
 
 def run_compare(nodes,pc):
     for n in nodes:
