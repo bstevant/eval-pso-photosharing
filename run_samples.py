@@ -42,11 +42,11 @@ def compare(file, verbose=False):
         p95_m = numpy.percentile(mm,95)
         print("Margin distribution [p5,p25,m,p75,p95]: " + str([p5_m, p25_m, mean_m, p75_m, p95_m]))
 
-def run_compare(nodes,pc):
+def run_compare(nodes,pc, verbose=False):
     for n in nodes:
         for p in pc:
             filename = "samples/infra_sample_" + str(n) + "n_" + str(p) + "pc"
             print("===== " + filename)
-            compare(filename)
+            compare(filename, verbose)
 
-run_compare([64], range(0,101,5))
+run_compare([64], range(0,101,5), verbose=True)
