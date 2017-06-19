@@ -1,5 +1,6 @@
 from infra import Infra
 from . import Score
+import numpy
 #import matplotlib.pyplot as plt
 
 class ExhaustPlacement:
