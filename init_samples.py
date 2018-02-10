@@ -2,7 +2,7 @@ from infra import Infra
 import json
 
 def gen_sample(i,j,json_file):
-    infra = Infra(i,j)
+    infra = Infra(i,j, "pareto")
     s = open(json_file, 'w', 0)
     s.write(json.dumps(infra.serialize()))
     s.close()

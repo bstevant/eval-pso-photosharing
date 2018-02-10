@@ -1,19 +1,32 @@
 import json
 import random
+import numpy
+
 
 # call1: get list from MH
-# call2: get photo from PH
-# call3: put photo to PH
-# call4: get thumb from TH
+call1_minrtt = { "dsl_dsl":50, "dsl_fib":30,
+                 "fib_dsl":50, "fib_fib":15}
 
 call1_medrtt = { "dsl_dsl":200, "dsl_fib":100,
                  "fib_dsl":200, "fib_fib":70}
 
+# call2: get photo from PH
+call2_minrtt = { "dsl_dsl":200, "dsl_fib":50,
+                 "fib_dsl":200, "fib_fib":30}
+
 call2_medrtt = { "dsl_dsl":800, "dsl_fib":200,
                  "fib_dsl":800, "fib_fib":100}
 
+# call3: put photo to PH
+call3_minrtt = { "dsl_dsl":200, "dsl_fib":200,
+                 "fib_dsl":50, "fib_fib":30}
+
 call3_medrtt = { "dsl_dsl":800, "dsl_fib":800,
                  "fib_dsl":200, "fib_fib":100}
+
+# call4: get thumb from TH
+call4_minrtt = { "dsl_dsl":100, "dsl_fib":40,
+                 "fib_dsl":100, "fib_fib":40}
 
 call4_medrtt = { "dsl_dsl":300, "dsl_fib":150,
                  "fib_dsl":300, "fib_fib":150}
@@ -43,6 +56,8 @@ class Link:
             self.rtt = self.select_dest_gaussian(med_rtt)
         elif method=="thingauss":
             self.rtt = self.select_dest_thingauss(med_rtt)
+        elif method=="pareto":
+            self.rtt = self.select_pareto(med_rtt)
         else:
             self.rtt = med_rtt
     
@@ -86,6 +101,9 @@ class Link:
         if i == 4:
             return random.randint(int(median*1.5), int(median*10))
     
+    def select_pareto(self, distri):
+        return int(numpy.random.choice(distri))
+
     def __int__(self):
         return self.rtt
 
@@ -106,17 +124,27 @@ class Infra:
         # 20% of nodes are clients
         self.clients = random.sample(range(0,len(self.nodes)), len(self.nodes)/5)
         
-        self.init_matrix(self.call1_matrix, call1_medrtt, method)
-        self.init_matrix(self.call2_matrix, call2_medrtt, method)
-        self.init_matrix(self.call3_matrix, call3_medrtt, method)
-        self.init_matrix(self.call4_matrix, call4_medrtt, method)
+        self.init_matrix(self.call1_matrix, call1_minrtt, call1_medrtt, method)
+        self.init_matrix(self.call2_matrix, call2_minrtt, call2_medrtt, method)
+        self.init_matrix(self.call3_matrix, call3_minrtt, call3_medrtt, method)
+        self.init_matrix(self.call4_matrix, call4_minrtt, call4_medrtt, method)
     
-    def init_matrix(self, matrix, medrtt, method="uni"):
+    def init_matrix(self, matrix, minrtt, medrtt, method="uni"):
+        m = {}
+        if method == "pareto":
+            m["dsl_dsl"] = self.gen_pareto(minrtt["dsl_dsl"], medrtt["dsl_dsl"], len(self.nodes)**2)
+            m["dsl_fib"] = self.gen_pareto(minrtt["dsl_fib"], medrtt["dsl_fib"], len(self.nodes)**2)
+            m["fib_dsl"] = self.gen_pareto(minrtt["fib_dsl"], medrtt["fib_dsl"], len(self.nodes)**2)
+            m["fib_fib"] = self.gen_pareto(minrtt["fib_fib"], medrtt["fib_fib"], len(self.nodes)**2)
         for i in self.nodes:
             line = []
             for j in self.nodes:
                 link_type = i.node_type + "_" + j.node_type
-                l = Link(medrtt[link_type], method)
+                if method == "pareto":
+                    v = m[link_type]
+                else:
+                    v = medrtt[link_type]
+                l = Link(v, method)
                 # Define low rtt for self-calling
                 if (i == j):
                     l.rtt = l.rtt / 10
@@ -129,7 +157,15 @@ class Infra:
             l = map(int, line)
             m.append(l)
         return m
+        
 
+    def gen_pareto(self, minrtt, medrtt, n):
+        # Pareto params:
+        # a = shape
+        # min = scale
+        a = float(medrtt) / float(medrtt - minrtt) 
+        return (numpy.random.pareto(a, n) + 1) * minrtt
+        
     def serialize(self):
         serial = {}
         serial["nodes"] = map(str, self.nodes)
