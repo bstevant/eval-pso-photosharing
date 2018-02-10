@@ -36,9 +36,15 @@ class Node:
 
 
 class Link:
-    def __init__(self, med_rtt):
-        self.rtt = self.select_dest_uni(med_rtt)
-        #self.rtt = self.select_dest_gaussian(med_rtt)
+    def __init__(self, med_rtt, method="uni"):
+        if method=="uni":
+            self.rtt = self.select_dest_uni(med_rtt)
+        elif method=="gaussian":
+            self.rtt = self.select_dest_gaussian(med_rtt)
+        elif method=="thingauss":
+            self.rtt = self.select_dest_thingauss(med_rtt)
+        else:
+            self.rtt = med_rtt
     
     # Select an rtt value from a Gaussian distribution around median
     def select_dest_gaussian(self, median):
@@ -53,7 +59,21 @@ class Link:
             return random.randint(int(median*1.1),int(median*1.4))
         if i == 9:
             return random.randint(int(median*1.4),int(median*10))
-    
+
+    # Select an rtt value from a Gaussian distribution around median
+    def select_dest_thingauss(self, median):
+        i = random.randint(1,9)
+        if i == 1:
+            return random.randint(int(median*0.5),int(median*0.8))
+        if (i == 2) or (i == 3):
+            return random.randint(int(median*0.6),int(median*0.99))
+        if (i == 4) or (i == 5) or (i == 6):
+            return random.randint(int(median*0.99),int(median*1.1))
+        if (i == 7) or (i == 8):
+            return random.randint(int(median*1.1),int(median*1.4))
+        if i == 9:
+            return random.randint(int(median*1.4),int(median*2))
+                
     # Select an rtt value from a uniform distribution from 0 to 1.5*median
     def select_dest_uni(self, median):
         i = random.randint(1,4)
@@ -71,7 +91,7 @@ class Link:
 
 class Infra:
 
-    def __init__(self, n_dsl, n_fiber):
+    def __init__(self, n_dsl, n_fiber, method="uni"):
         self.nodes = []
         self.clients = []
         self.call1_matrix = []
@@ -86,17 +106,17 @@ class Infra:
         # 20% of nodes are clients
         self.clients = random.sample(range(0,len(self.nodes)), len(self.nodes)/5)
         
-        self.init_matrix(self.call1_matrix, call1_medrtt)
-        self.init_matrix(self.call2_matrix, call2_medrtt)
-        self.init_matrix(self.call3_matrix, call3_medrtt)
-        self.init_matrix(self.call4_matrix, call4_medrtt)
+        self.init_matrix(self.call1_matrix, call1_medrtt, method)
+        self.init_matrix(self.call2_matrix, call2_medrtt, method)
+        self.init_matrix(self.call3_matrix, call3_medrtt, method)
+        self.init_matrix(self.call4_matrix, call4_medrtt, method)
     
-    def init_matrix(self, matrix, medrtt):
+    def init_matrix(self, matrix, medrtt, method="uni"):
         for i in self.nodes:
             line = []
             for j in self.nodes:
                 link_type = i.node_type + "_" + j.node_type
-                l = Link(medrtt[link_type])
+                l = Link(medrtt[link_type], method)
                 # Define low rtt for self-calling
                 if (i == j):
                     l.rtt = l.rtt / 10
@@ -136,6 +156,19 @@ class Infra:
                     call3_matrix, \
                     call4_matrix, \
                     clients
+    
+    @classmethod
+    def write_infra(self, n, c1m, c2m, c3m, c4m, c, file):
+        serial = {}
+        serial["nodes"] = n
+        serial["clients"] = c
+        serial["call1_matrix"] = c1m
+        serial["call2_matrix"] = c2m
+        serial["call3_matrix"] = c3m
+        serial["call4_matrix"] = c4m
+        s = open(file, 'w', 0)
+        s.write(json.dumps(serial))
+        s.close()
 
 
 if __name__ == '__main__':
