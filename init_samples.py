@@ -18,7 +18,8 @@ def gen_samples(nodes, pc):
             gen_sample(n_dsl, n_fib, filename)
 
 
-#gen_samples(range(5,26,5), [50])
+
+gen_samples(range(5,51,5), [50])
 #gen_sample(5,5,"samples/infra_sample_10n_50pc")
 #gen_sample(10,10,"samples/infra_sample_20n_50pc")
 #gen_sample(15,15,"samples/infra_sample_30n_50pc")
