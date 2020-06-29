@@ -1,13 +1,13 @@
-from infra import Infra
-from . import Score
+from infra.edgeinfra import Infra
+from placement.common import Score
 import numpy
 #import matplotlib.pyplot as plt
 
 class ExhaustPlacement:
 
-    def __init__(self, file):
-        self.nodes, c1m, c2m, c3m, c4m, c = Infra.read_infra(file)
-        self.scoring = Score(c, c1m, c2m, c3m, c4m)
+    def __init__(self, infra):
+        self.infra = infra
+        self.scoring = Score(infra)
 
     def constraint(self, p):
         # Test identical locations in placement
@@ -16,8 +16,8 @@ class ExhaustPlacement:
             return 0
 #        elif (i == 1): # 1 identical location for PH
 #            return 0
-        elif (i == 1) and (p[1] == p[2]): # 1 identical location for PH
-            return 0
+#        elif (i == 1) and (p[1] == p[2]): # 1 identical location for PH
+#            return 0
 #        elif (i == 2) and (p[1] == p[2]): # 1 identical location for PH
 #            return 0
         else: # Some identical locations ... forbidden
@@ -28,10 +28,10 @@ class ExhaustPlacement:
         ss= []
         s = 0
         popt = []
-        for i in range(0, len(self.nodes)):
-            for j in range(0, len(self.nodes)):
-                for k in range(0, len(self.nodes)):
-                    for l in range(0, len(self.nodes)):
+        for i in range(0, len(self.infra.nodes)):
+            for j in range(0, len(self.infra.nodes)):
+                for k in range(0, len(self.infra.nodes)):
+                    for l in range(0, len(self.infra.nodes)):
                         p = [i,j,k,l]
                         if self.constraint(p) == 0:
                             s = self.scoring.score_placement(p)

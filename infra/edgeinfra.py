@@ -3,33 +3,47 @@ import random
 import numpy
 
 
-# call1: get list from MH
-call1_minrtt = { "dsl_dsl":50, "dsl_fib":30,
-                 "fib_dsl":50, "fib_fib":15}
+# call1: get gallery from UI
+ui_get_minrtt = { "dsl_dsl":4000, "dsl_fib":1000,
+                 "fib_dsl":4000, "fib_fib":200}
 
-call1_medrtt = { "dsl_dsl":200, "dsl_fib":100,
-                 "fib_dsl":200, "fib_fib":70}
+ui_get_medrtt = { "dsl_dsl":8000, "dsl_fib":4000,
+                 "fib_dsl":8000, "fib_fib":400}
+
+# call1: post photo to UI
+ui_post_minrtt = { "dsl_dsl":20000, "dsl_fib":20000,
+                 "fib_dsl":5000, "fib_fib":500}
+
+ui_post_medrtt = { "dsl_dsl":40000, "dsl_fib":40000,
+                 "fib_dsl":20000, "fib_fib":1500}
+
+# call1: get list from MH
+mh_get_minrtt = { "dsl_dsl":130, "dsl_fib":130,
+                 "fib_dsl":100, "fib_fib":90}
+
+mh_get_medrtt = { "dsl_dsl":170, "dsl_fib":170,
+                 "fib_dsl":140, "fib_fib":100}
 
 # call2: get photo from PH
-call2_minrtt = { "dsl_dsl":200, "dsl_fib":50,
-                 "fib_dsl":200, "fib_fib":30}
+ph_get_minrtt = { "dsl_dsl":20000, "dsl_fib":5000,
+                 "fib_dsl":20000, "fib_fib":500}
 
-call2_medrtt = { "dsl_dsl":800, "dsl_fib":200,
-                 "fib_dsl":800, "fib_fib":100}
+ph_get_medrtt = { "dsl_dsl":40000, "dsl_fib":20000,
+                 "fib_dsl":40000, "fib_fib":1500}
 
 # call3: put photo to PH
-call3_minrtt = { "dsl_dsl":200, "dsl_fib":200,
-                 "fib_dsl":50, "fib_fib":30}
+ph_post_minrtt = { "dsl_dsl":20000, "dsl_fib":20000,
+                 "fib_dsl":5000, "fib_fib":500}
 
-call3_medrtt = { "dsl_dsl":800, "dsl_fib":800,
-                 "fib_dsl":200, "fib_fib":100}
+ph_post_medrtt = { "dsl_dsl":40000, "dsl_fib":40000,
+                 "fib_dsl":20000, "fib_fib":1500}
 
 # call4: get thumb from TH
-call4_minrtt = { "dsl_dsl":100, "dsl_fib":40,
-                 "fib_dsl":100, "fib_fib":40}
+th_get_minrtt = { "dsl_dsl":1400, "dsl_fib":800,
+                 "fib_dsl":1400, "fib_fib":600}
 
-call4_medrtt = { "dsl_dsl":300, "dsl_fib":150,
-                 "fib_dsl":300, "fib_fib":150}
+th_get_medrtt = { "dsl_dsl":2200, "dsl_fib":1400,
+                 "fib_dsl":2200, "fib_fib":650}
 
 
 class Node:
@@ -105,29 +119,40 @@ class Link:
         return int(numpy.random.choice(distri))
 
     def __int__(self):
-        return self.rtt
+        return int(self.rtt)
 
 class Infra:
 
-    def __init__(self, n_dsl, n_fiber, method="uni"):
+    def __init__(self, n_dsl, n_fiber, method="uni", file=None):
         self.nodes = []
         self.clients = []
-        self.call1_matrix = []
-        self.call2_matrix = []
-        self.call3_matrix = []
-        self.call4_matrix = []
+        self.ui_get_matrix  = []
+        self.ui_post_matrix = []
+        self.ph_get_matrix  = []
+        self.ph_post_matrix = []
+        self.mh_get_matrix  = []
+        self.th_get_matrix  = []
+        
+        if file != None:
+            self.read_file(file)
+        else:
+            self.init_infra(n_dsl, n_fiber, method)
+
+    def init_infra(self, n_dsl, n_fiber, method):
         for i in range(0, n_dsl):
-            self.nodes.append(Node("dsl"))
+                self.nodes.append(Node("dsl"))
         for i in range(0, n_fiber):
             self.nodes.append(Node("fib"))
             
         # 20% of nodes are clients
-        self.clients = random.sample(range(0,len(self.nodes)), len(self.nodes)/5)
+        self.clients = random.sample(range(0,len(self.nodes)), int(len(self.nodes)/5))
         
-        self.init_matrix(self.call1_matrix, call1_minrtt, call1_medrtt, method)
-        self.init_matrix(self.call2_matrix, call2_minrtt, call2_medrtt, method)
-        self.init_matrix(self.call3_matrix, call3_minrtt, call3_medrtt, method)
-        self.init_matrix(self.call4_matrix, call4_minrtt, call4_medrtt, method)
+        self.init_matrix(self.ui_get_matrix,  ui_get_minrtt, ui_get_medrtt, method)
+        self.init_matrix(self.ui_post_matrix, ui_post_minrtt, ui_post_medrtt, method)
+        self.init_matrix(self.ph_get_matrix,  ph_get_minrtt, ph_get_medrtt, method)
+        self.init_matrix(self.ph_post_matrix, ph_post_minrtt, ph_post_medrtt, method)
+        self.init_matrix(self.mh_get_matrix,  mh_get_minrtt, mh_get_medrtt, method)
+        self.init_matrix(self.th_get_matrix,  th_get_minrtt, th_get_medrtt, method)
     
     def init_matrix(self, matrix, minrtt, medrtt, method="uni"):
         m = {}
@@ -148,13 +173,13 @@ class Infra:
                 # Define low rtt for self-calling
                 if (i == j):
                     l.rtt = l.rtt / 10
-                line.append(l)
+                line.append(int(l))
             matrix.append(line)
 
     def serial_matrix(self, matrix):
         m = []
         for line in matrix:
-            l = map(int, line)
+            l = list(map(int, line))
             m.append(l)
         return m
         
@@ -168,49 +193,68 @@ class Infra:
         
     def serialize(self):
         serial = {}
-        serial["nodes"] = map(str, self.nodes)
-        serial["clients"] = self.clients
-        serial["call1_matrix"] = self.serial_matrix(self.call1_matrix)
-        serial["call2_matrix"] = self.serial_matrix(self.call2_matrix)
-        serial["call3_matrix"] = self.serial_matrix(self.call3_matrix)
-        serial["call4_matrix"] = self.serial_matrix(self.call4_matrix)
+        serial["nodes"] = list(map(str, self.nodes))
+        serial["clients"] = list(self.clients)
+        serial["ui_get_matrix"]  = self.serial_matrix(self.ui_get_matrix)
+        serial["ui_post_matrix"] = self.serial_matrix(self.ui_post_matrix)
+        serial["ph_get_matrix"]  = self.serial_matrix(self.ph_get_matrix)
+        serial["ph_post_matrix"] = self.serial_matrix(self.ph_post_matrix)
+        serial["mh_get_matrix"]  = self.serial_matrix(self.mh_get_matrix)
+        serial["th_get_matrix"]  = self.serial_matrix(self.th_get_matrix)
         return serial
         
+    def read_file(self, file):
+        with open(file) as json_data:
+            data = json.load(json_data)
+            self.nodes = data["nodes"]
+            self.ui_get_matrix  = data["ui_get_matrix"] 
+            self.ui_post_matrix = data["ui_post_matrix"]
+            self.ph_get_matrix  = data["ph_get_matrix"] 
+            self.ph_post_matrix = data["ph_post_matrix"]
+            self.mh_get_matrix  = data["mh_get_matrix"] 
+            self.th_get_matrix  = data["th_get_matrix"] 
+            self.clients = data["clients"]
+
     @classmethod
     def read_infra(self, file):
         with open(file) as json_data:
             data = json.load(json_data)
             nodes = data["nodes"]
-            call1_matrix = data["call1_matrix"]
-            call2_matrix = data["call2_matrix"]
-            call3_matrix = data["call3_matrix"]
-            call4_matrix = data["call4_matrix"]
+            ui_get_matrix  = data["ui_get_matrix"] 
+            ui_post_matrix = data["ui_post_matrix"]
+            ph_get_matrix  = data["ph_get_matrix"] 
+            ph_post_matrix = data["ph_post_matrix"]
+            mh_get_matrix  = data["mh_get_matrix"] 
+            th_get_matrix  = data["th_get_matrix"] 
             clients = data["clients"]
             return nodes, \
-                    call1_matrix, \
-                    call2_matrix, \
-                    call3_matrix, \
-                    call4_matrix, \
+                    ui_get_matrix , \
+                    ui_post_matrix, \
+                    ph_get_matrix , \
+                    ph_post_matrix, \
+                    mh_get_matrix , \
+                    th_get_matrix , \
                     clients
     
     @classmethod
-    def write_infra(self, n, c1m, c2m, c3m, c4m, c, file):
+    def write_infra(self, n, uig, uip, phg, php, mhg, thg, c, file):
         serial = {}
         serial["nodes"] = n
         serial["clients"] = c
-        serial["call1_matrix"] = c1m
-        serial["call2_matrix"] = c2m
-        serial["call3_matrix"] = c3m
-        serial["call4_matrix"] = c4m
-        s = open(file, 'w', 0)
-        s.write(json.dumps(serial))
-        s.close()
+        serial["ui_get_matrix"]  = uig
+        serial["ui_post_matrix"] = uip
+        serial["ph_get_matrix"]  = phg
+        serial["ph_post_matrix"] = php
+        serial["mh_get_matrix"]  = mhg
+        serial["th_get_matrix"]  = thg
+        with open(file, 'w') as s:
+            s.write(json.dumps(serial))
+            #s.close()
 
 
 if __name__ == '__main__':
     infra = Infra(4,12)
     # file to store matrix
     json_file = "infra_sample.json"
-    s = open(json_file, 'w', 0)
-    s.write(json.dumps(infra.serialize()))
-    s.close()
+    with open(json_file, 'w', 0) as s:
+        s.write(json.dumps(infra.serialize()))

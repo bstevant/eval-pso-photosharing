@@ -1,44 +1,37 @@
 import numpy
 
-CALL1_WEIGHT=3
-CALL2_WEIGHT=2
-CALL3_WEIGHT=1
-CALL4_WEIGHT=3
+GET_W=1
+POST_W=1
 
 class Score:
-    def __init__(self, c, c1m, c2m, c3m, c4m):
-        self.clients = c
-        self.call1_matrix = c1m
-        self.call2_matrix = c2m
-        self.call3_matrix = c3m
-        self.call4_matrix = c4m
+    def __init__(self, infra):
+        self.clients = infra.clients
+        self.uig = infra.ui_get_matrix 
+        self.uip = infra.ui_post_matrix
+        self.phg = infra.ph_get_matrix 
+        self.php = infra.ph_post_matrix
+        self.mhg = infra.mh_get_matrix 
+        self.thg = infra.th_get_matrix 
 
     def score_placement(self,p):
-        call1_rtt = []
-        call2_rtt = []
-        call3_rtt = []
-        call4_rtt = []
+        clients_rt = []
+
         # Placements for each services
-        p_MH  = int(p[0])
-        p_PHd = int(p[1])
-        p_PHu = int(p[2])
-        p_TH  = int(p[3])
+        p_UI = int(p[0])
+        p_PH = int(p[1])
+        p_MH = int(p[2])
+        p_TH = int(p[3])
     
         for c in self.clients:
-            call1_rtt.append(self.call1_matrix[c][p_MH])
-            call2_rtt.append(self.call2_matrix[c][p_PHd])
-            call3_rtt.append(self.call3_matrix[c][p_PHu])
-            call4 = self.call4_matrix[c][p_TH] \
-                    + self.call1_matrix[p_TH][p_MH] \
-                    + self.call2_matrix[p_TH][p_PHd]
-            call4_rtt.append(call4)
-        call1_mean = numpy.mean(call1_rtt)
-        call2_mean = numpy.mean(call2_rtt)
-        call3_mean = numpy.mean(call3_rtt)
-        call4_mean = numpy.mean(call4_rtt)
-        score = CALL1_WEIGHT*call1_mean \
-                + CALL2_WEIGHT* call2_mean \
-                + CALL3_WEIGHT* call3_mean \
-                + CALL4_WEIGHT* call4_mean
+            rt_get = int(self.uig[c][p_UI]) \
+                   + int(self.mhg[p_UI][p_MH]) \
+                   + 5*(int(self.thg[p_UI][p_TH]) \
+                      + int(self.phg[p_TH][p_PH]) \
+                      + int(self.mhg[p_TH][p_MH]))
+            rt_post = int(self.uip[c][p_UI]) + int(self.mhg[p_UI][p_MH]) + int(self.php[p_UI][p_PH])
+            rt = (GET_W*rt_get + POST_W*rt_post) / (GET_W + POST_W)
+            clients_rt.append(rt)
+        
+        rt_app = numpy.mean(clients_rt)        
     
-        return score
+        return rt_app

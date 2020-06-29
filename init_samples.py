@@ -1,11 +1,11 @@
-from infra import Infra
+from infra.edgeinfra import Infra
+
 import json
 
 def gen_sample(i,j,json_file):
     infra = Infra(i,j, "pareto")
-    s = open(json_file, 'w', 0)
-    s.write(json.dumps(infra.serialize()))
-    s.close()
+    with open(json_file, 'w') as s:
+        s.write(json.dumps(infra.serialize()))
     
     
 def gen_samples(nodes, pc):
@@ -19,7 +19,13 @@ def gen_samples(nodes, pc):
 
 
 
-gen_samples(range(5,51,5), [50])
+#gen_samples([10, 15, 20, 30, 40, 50], [10])
+gen_samples([10, 15, 20, 30], [20])
+
+
+
+
+
 #gen_sample(5,5,"samples/infra_sample_10n_50pc")
 #gen_sample(10,10,"samples/infra_sample_20n_50pc")
 #gen_sample(15,15,"samples/infra_sample_30n_50pc")
