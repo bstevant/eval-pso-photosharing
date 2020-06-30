@@ -30,8 +30,11 @@ class ExhaustPlacement:
         popt = []
         for i in range(0, len(self.infra.nodes)):
             for j in range(0, len(self.infra.nodes)):
+                if i == j: continue
                 for k in range(0, len(self.infra.nodes)):
+                    if k in {i, j}: continue
                     for l in range(0, len(self.infra.nodes)):
+                        if l in {i, j, k}: continue
                         p = [i,j,k,l]
                         if self.constraint(p) == 0:
                             s = self.scoring.score_placement(p)

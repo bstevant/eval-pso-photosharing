@@ -22,9 +22,10 @@ class RedirectStdStreams(object):
 
 class PsoPlacement:
 
-    def __init__(self, infra):
+    def __init__(self, infra, maxiter=100):
         self.infra = infra
         self.scoring = Score(infra)
+        self.maxiter = maxiter
 
     # Constraint: All node in placement should be different
     def constraint(self,p):
@@ -49,5 +50,5 @@ class PsoPlacement:
         ub = [n, n, n, n]
         devnull = open(os.devnull, 'w')
         with RedirectStdStreams(stdout=devnull, stderr=devnull):
-            popt, score = pso(self.scoring.score_placement, lb, ub, f_ieqcons=self.constraint, maxiter=100)
+            popt, score = pso(self.scoring.score_placement, lb, ub, f_ieqcons=self.constraint, maxiter=self.maxiter)
         return list(map(int, popt)), score
