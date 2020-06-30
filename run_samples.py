@@ -2,6 +2,7 @@ from infra.edgeinfra import Infra
 from placement.exhaust import ExhaustPlacement
 from placement.greedy import GreedyPlacement
 from placement.pso import PsoPlacement
+import time
 import numpy
 import os
 import sys
@@ -76,7 +77,60 @@ def run_compare(nodes,pc, verbose=False):
 #run_compare([10, 20, 30, 40, 50], [10], verbose=True)
 #run_compare([10, 20, 30], [20], verbose=True)
 
-for i in range(1,20):
-    print("===== %d" %i)
-    infra = Infra(20,10,method="pareto")
-    compare(infra, verbose=False)
+def print_distrib(a, s):
+    p50_m = numpy.percentile(a,50)
+    p25_m = numpy.percentile(a,25)
+    p75_m = numpy.percentile(a,75)
+    p5_m = numpy.percentile(a,5)
+    p95_m = numpy.percentile(a,95)
+    print(s + " Margin[p5,p25,m,p75,p95]: " + str([p5_m, p25_m, p50_m, p75_m, p95_m]))
+
+
+def eval_strategies(n, nb_dsl, nb_fib):
+    greedy_margins = []
+    greedy_times = []
+    pso_margins = []
+    pso_times = []
+    
+    for k in range(0,n):
+        infra = Infra(nb_dsl, nb_fib, method="pareto")
+        
+        ex = ExhaustPlacement(infra)
+        popt, score_ex = ex.find_placement(verbose=False)
+        
+        greedy = GreedyPlacement(infra)
+        t0 = time.time()
+        popt, score_greedy = greedy.find_placement()
+        t = time.time() - t0
+        greedy_m = 100*(score_greedy-score_ex) / score_ex
+        greedy_margins.append(greedy_m)
+        greedy_times.append(t)
+        
+        pso = PsoPlacement(infra, maxiter=200)
+        mm = []
+        devnull = open(os.devnull, 'w')
+        with RedirectStdStreams(stdout=devnull, stderr=devnull):
+            t = 0.0
+            for i in range(0,20):
+                t0 = time.time()
+                popt, score = pso.find_placement()
+                t += time.time() - t0
+                margin = 100*(score-score_ex) / score_ex
+                mm.append(margin)
+        pso_m = numpy.average(mm)
+        pso_margins.append(pso_m)
+        pso_times.append(t/20)
+    
+    greedy_avg_time = numpy.average(greedy_times)
+    ps_avg_time = numpy.average(pso_times)
+    #print("GREEDY (%d,%d): t: %f %s" % (nb_dsl, nb_fib, greedy_avg_time, str(greedy_margins)))
+    print_distrib("GREEDY (%d,%d): t: %f" % (nb_dsl, nb_fib, greedy_avg_time), greedy_margins)
+    #print("PSwarm (%d,%d): t: %f %s" % (nb_dsl, nb_fib, ps_avg_time, str(pso_margins)))
+    print_distrib("PSwarm (%d,%d): t: %f" % (nb_dsl, nb_fib, pso_avg_time), pso_margins)
+
+eval_strategies(5, 5, 5)
+
+#for i in range(1,20):
+#    print("===== %d" %i)
+#    infra = Infra(6,14,method="pareto")
+#    compare(infra, verbose=False)
