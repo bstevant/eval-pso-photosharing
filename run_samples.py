@@ -77,7 +77,7 @@ def run_compare(nodes,pc, verbose=False):
 #run_compare([10, 20, 30, 40, 50], [10], verbose=True)
 #run_compare([10, 20, 30], [20], verbose=True)
 
-def print_distrib(a, s):
+def print_distrib(s, a):
     p50_m = numpy.percentile(a,50)
     p25_m = numpy.percentile(a,25)
     p75_m = numpy.percentile(a,75)
@@ -122,7 +122,7 @@ def eval_strategies(n, nb_dsl, nb_fib):
         pso_times.append(t/20)
     
     greedy_avg_time = numpy.average(greedy_times)
-    ps_avg_time = numpy.average(pso_times)
+    pso_avg_time = numpy.average(pso_times)
     #print("GREEDY (%d,%d): t: %f %s" % (nb_dsl, nb_fib, greedy_avg_time, str(greedy_margins)))
     print_distrib("GREEDY (%d,%d): t: %f" % (nb_dsl, nb_fib, greedy_avg_time), greedy_margins)
     #print("PSwarm (%d,%d): t: %f %s" % (nb_dsl, nb_fib, ps_avg_time, str(pso_margins)))
