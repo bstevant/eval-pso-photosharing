@@ -63,7 +63,8 @@ class GreedyPlacement:
         ph = -1
         for i in range(0, len(self.infra.nodes)):
             if i in {ui, mh, th}: continue
-            rt = (GET_W*self.infra.ph_get_matrix[th][i] + POST_W*self.infra.ph_post_matrix[ui][i])/(GET_W+POST_W)
+            #rt = (GET_W*self.infra.ph_get_matrix[th][i] + POST_W*self.infra.ph_post_matrix[ui][i])/(GET_W+POST_W)
+            rt = self.infra.ph_get_matrix[th][i]
             if rt < min_rp_ph:
                 min_rp_ph = rt
                 ph = i
