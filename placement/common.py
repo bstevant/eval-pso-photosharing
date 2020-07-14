@@ -32,6 +32,6 @@ class Score:
             rt = (GET_W*rt_get + POST_W*rt_post) / (GET_W + POST_W)
             clients_rt.append(rt)
         
-        rt_app = numpy.mean(clients_rt)        
+        rt_app = numpy.average(clients_rt)        
     
         return rt_app
