@@ -162,7 +162,7 @@ class Infra:
         self.init_matrix(self.ph_post_matrix, ph_post_minrtt, ph_post_medrtt, method)
         self.init_matrix(self.mh_get_matrix,  mh_get_minrtt, mh_get_medrtt, method)
         self.init_matrix(self.th_get_matrix,  th_get_minrtt, th_get_medrtt, method)
-        self.updt_matrix(self.th_get_matrix,  self.a2, th2_get_minrtt, th2_get_medrtt, method)
+        self.updt_matrix(self.th_get_matrix,  self.a2, th_get2_minrtt, th_get2_medrtt, method)
     
     def init_matrix(self, matrix, minrtt, medrtt, method="uni"):
         m = {}
@@ -193,20 +193,25 @@ class Infra:
             m["dsl_fib"] = self.gen_pareto(minrtt["dsl_fib"], medrtt["dsl_fib"], len(self.nodes)**2)
             m["fib_dsl"] = self.gen_pareto(minrtt["fib_dsl"], medrtt["fib_dsl"], len(self.nodes)**2)
             m["fib_fib"] = self.gen_pareto(minrtt["fib_fib"], medrtt["fib_fib"], len(self.nodes)**2)
+        k = 0
         for i in self.nodes:
-            line = []
-            for j in nodes:
-                link_type = i.node_type + "_" + j.node_type
-                if method == "pareto":
-                    v = m[link_type]
-                else:
-                    v = medrtt[link_type]
-                l = Link(v, method)
-                # Define low rtt for self-calling
-                if (i == j):
-                    l.rtt = l.rtt / 10
-                line.append(int(l))
-            matrix[i] = line
+            line = matrix[k]
+            n = 0
+            for j in self.nodes:
+                if j in nodes:
+                    link_type = i.node_type + "_" + j.node_type
+                    if method == "pareto":
+                        v = m[link_type]
+                    else:
+                        v = medrtt[link_type]
+                    l = Link(v, method)
+                    # Define low rtt for self-calling
+                    if (i == j):
+                        l.rtt = l.rtt / 10
+                    line[n] = int(l)
+                n+=1
+            matrix[k] = line
+            k +=1
     
     def serial_matrix(self, matrix):
         m = []
